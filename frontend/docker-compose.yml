@@ -1,0 +1,61 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: recipehub-postgres-compose
+    environment:
+      POSTGRES_USER: recipeuser
+      POSTGRES_PASSWORD: recipepass
+      POSTGRES_DB: recipedb
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./db-init:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U recipeuser -d recipedb"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  notification-service:
+    build:
+      context: ../notification-service
+    container_name: recipehub-notification
+    environment:
+      PORT: 5001
+    ports:
+      - "5001:5001"
+
+  recipe-service:
+    build:
+      context: ../recipe-service
+    container_name: recipehub-recipe
+    environment:
+      PORT: 5000
+      NOTIFICATION_SERVICE_URL: http://notification-service:5001
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: recipeuser
+      DB_PASSWORD: recipepass
+      DB_NAME: recipedb
+    ports:
+      - "5000:5000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      notification-service:
+        condition: service_started
+
+  frontend:
+    build:
+      context: .
+      args:
+        VITE_API_URL: http://localhost:5000
+    container_name: recipehub-frontend
+    ports:
+      - "8080:80"
+    depends_on:
+      - recipe-service
+
+volumes:
+  postgres_data:

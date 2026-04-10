@@ -1,0 +1,15 @@
+node_modules/
+.env
+*.log
+
+node.exe
+npm
+npm.cmd
+npm.ps1
+npx
+npx.cmd
+npx.ps1
+corepack
+corepack.cmd
+install_tools.bat
+nodevars.bat
