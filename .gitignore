@@ -18,5 +18,9 @@ corepack
 corepack.cmd
 install_tools.bat
 nodevars.bat
+infra/.terraform/
+infra/terraform.tfstate
+infra/terraform.tfstate.backup
+infra/terraform.tfvars
 
 .vscode/

@@ -1,0 +1,5 @@
+resource_group_name            = "recipehub-rg"
+location                       = "uksouth"
+log_analytics_workspace_name   = "recipehub-law"
+container_app_environment_name = "recipehub-cae"
+container_registry_name        = "recipehubacr27ch"
