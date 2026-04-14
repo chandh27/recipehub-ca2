@@ -9,13 +9,21 @@ const PORT = process.env.PORT || 5000;
 const NOTIFICATION_SERVICE_URL =
   process.env.NOTIFICATION_SERVICE_URL || "http://localhost:5001";
 
-const pool = new Pool({
+const dbConfig = {
   host: process.env.DB_HOST,
-  port: process.env.DB_PORT,
+  port: Number(process.env.DB_PORT || 5432),
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
-});
+};
+
+if ((process.env.DB_SSL || "").toLowerCase() === "true") {
+  dbConfig.ssl = {
+    rejectUnauthorized: false,
+  };
+}
+
+const pool = new Pool(dbConfig);
 
 app.use(cors());
 app.use(express.json());
