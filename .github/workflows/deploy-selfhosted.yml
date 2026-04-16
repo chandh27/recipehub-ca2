@@ -6,6 +6,9 @@ on:
       - main
   workflow_dispatch:
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   build-and-deploy:
     runs-on: [self-hosted, Windows, X64]
@@ -14,10 +17,25 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Verify Azure login
+      - name: Debug runner info
         shell: powershell
         run: |
+          Write-Host "Runner name: $env:RUNNER_NAME"
+          Write-Host "Workspace: $env:GITHUB_WORKSPACE"
+          Write-Host "Repo: $env:GITHUB_REPOSITORY"
+          Get-Location
+
+      - name: Debug Azure CLI
+        shell: powershell
+        run: |
+          az version
           az account show
+
+      - name: Debug Docker
+        shell: powershell
+        run: |
+          docker version
+          docker ps
 
       - name: Log in to ACR
         shell: powershell
