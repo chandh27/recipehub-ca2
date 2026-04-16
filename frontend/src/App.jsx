@@ -101,9 +101,9 @@ function App() {
               onChange={handleChange}
             />
 
-            <label>Ingredients</label>
+            <label>Ingredients required</label>
             <textarea
-              name="ingredients"
+              name="ingredients required"
               placeholder="Enter ingredients"
               value={formData.ingredients}
               onChange={handleChange}
