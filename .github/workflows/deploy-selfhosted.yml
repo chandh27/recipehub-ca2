@@ -1,0 +1,92 @@
+name: Build and Deploy on Self-Hosted Runner
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: [self-hosted, Windows, X64]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Verify Azure login
+        shell: powershell
+        run: |
+          az account show
+
+      - name: Log in to ACR
+        shell: powershell
+        run: |
+          az acr login --name recipehubacr27ch
+
+      - name: Set variables
+        shell: powershell
+        run: |
+          "IMAGE_TAG=$env:GITHUB_SHA" >> $env:GITHUB_ENV
+          "RG=recipehub-rg" >> $env:GITHUB_ENV
+          "ACR_LOGIN_SERVER=recipehubacr27ch.azurecr.io" >> $env:GITHUB_ENV
+
+      - name: Get current recipe service URL
+        shell: powershell
+        run: |
+          $recipeFqdn = az containerapp show `
+            --name recipe-service-app `
+            --resource-group recipehub-rg `
+            --query "properties.configuration.ingress.fqdn" `
+            -o tsv
+          "RECIPE_URL=https://$recipeFqdn" >> $env:GITHUB_ENV
+          Write-Host "Recipe URL is https://$recipeFqdn"
+
+      - name: Build and push notification-service image
+        shell: powershell
+        run: |
+          docker build `
+            -t $env:ACR_LOGIN_SERVER/notification-service:$env:IMAGE_TAG `
+            .\notification-service
+          docker push $env:ACR_LOGIN_SERVER/notification-service:$env:IMAGE_TAG
+
+      - name: Build and push recipe-service image
+        shell: powershell
+        run: |
+          docker build `
+            -t $env:ACR_LOGIN_SERVER/recipe-service:$env:IMAGE_TAG `
+            .\recipe-service
+          docker push $env:ACR_LOGIN_SERVER/recipe-service:$env:IMAGE_TAG
+
+      - name: Build and push frontend image
+        shell: powershell
+        run: |
+          docker build `
+            --build-arg VITE_API_URL="$env:RECIPE_URL" `
+            -t $env:ACR_LOGIN_SERVER/frontend:$env:IMAGE_TAG `
+            .\frontend
+          docker push $env:ACR_LOGIN_SERVER/frontend:$env:IMAGE_TAG
+
+      - name: Update notification service
+        shell: powershell
+        run: |
+          az containerapp update `
+            --name notification-service-app `
+            --resource-group recipehub-rg `
+            --image $env:ACR_LOGIN_SERVER/notification-service:$env:IMAGE_TAG
+
+      - name: Update recipe service
+        shell: powershell
+        run: |
+          az containerapp update `
+            --name recipe-service-app `
+            --resource-group recipehub-rg `
+            --image $env:ACR_LOGIN_SERVER/recipe-service:$env:IMAGE_TAG
+
+      - name: Update frontend
+        shell: powershell
+        run: |
+          az containerapp update `
+            --name frontend-app `
+            --resource-group recipehub-rg `
+            --image $env:ACR_LOGIN_SERVER/frontend:$env:IMAGE_TAG
