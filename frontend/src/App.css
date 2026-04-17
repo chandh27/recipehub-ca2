@@ -45,7 +45,8 @@ h1 {
 }
 
 .recipe-form input,
-.recipe-form textarea {
+.recipe-form textarea,
+.search-box {
   width: 100%;
   padding: 12px;
   border: 1px solid #cfd8e3;
@@ -54,7 +55,8 @@ h1 {
 }
 
 .recipe-form button,
-.refresh-btn {
+.refresh-btn,
+.delete-btn {
   padding: 12px 16px;
   border: none;
   background: #2563eb;
@@ -64,8 +66,14 @@ h1 {
   font-size: 14px;
 }
 
+.delete-btn {
+  background: #dc2626;
+  padding: 10px 14px;
+}
+
 .recipe-form button:disabled,
-.refresh-btn:disabled {
+.refresh-btn:disabled,
+.delete-btn:disabled {
   opacity: 0.7;
   cursor: not-allowed;
 }
@@ -84,6 +92,10 @@ h1 {
   margin-bottom: 16px;
 }
 
+.search-box {
+  margin-bottom: 16px;
+}
+
 .recipe-list {
   display: flex;
   flex-direction: column;
@@ -95,6 +107,13 @@ h1 {
   border-radius: 10px;
   padding: 16px;
   background: #fafcff;
+}
+
+.recipe-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
 }
 
 .recipe-item h3 {

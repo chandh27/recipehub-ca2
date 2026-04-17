@@ -120,6 +120,33 @@ app.post("/recipes", async (req, res) => {
   }
 });
 
+app.delete("/recipes/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const result = await pool.query(
+      "DELETE FROM recipes WHERE id = $1 RETURNING *",
+      [id]
+    );
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({
+        error: "Recipe not found",
+      });
+    }
+
+    res.json({
+      message: "Recipe deleted successfully",
+      recipe: result.rows[0],
+    });
+  } catch (error) {
+    console.error("Error deleting recipe:", error.message);
+    res.status(500).json({
+      error: "Failed to delete recipe",
+    });
+  }
+});
+
 async function startServer() {
   try {
     await initializeDatabase();
